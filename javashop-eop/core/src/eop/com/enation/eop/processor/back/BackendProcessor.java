@@ -57,6 +57,10 @@ public class BackendProcessor implements IEopProcessor {
 			if(adminUser==null){
 				redirectUrl=(ctx+"/admin/login.do");
 			}else{ //已经登录过了
+				if(uri.equals("/admin") || uri.equals("/admin/") ){
+					httpResponse.sendRedirect(ctx+"/admin/main.do");
+					return true;
+				}
 				if(!uri.startsWith("/admin/")){//如果不是访问的登录界，跳到登录界面
 					httpResponse.sendRedirect(ctx+"/admin/main.do");
 					return true;
