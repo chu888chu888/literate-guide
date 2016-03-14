@@ -1,0 +1,224 @@
+<#include '/admin/header.html' > 
+<#assign dateformat=
+"com.enation.framework.directive.DateformateDirective"?new()> 
+<#assign permssion="com.enation.app.base.core.directive.PermssionDirective"?new()>
+
+<div class="main">
+	<form  method="post" id="theForm" class="validate">
+		<div class="shadowBoxWhite  whiteBox detail">
+				<table cellspacing="0" cellpadding="0" border="0"  style="width: 99%">
+					<tr>
+						<th class="title" colspan="4">退货结算</th>
+					</tr>
+					<tr>
+						<td>退货单号：</th>
+						<td>${sellBackList.tradeno}</td>
+						<td>状态：</td>
+						<td>
+							<#if sellBackList.tradestatus==0>新建
+								<#elseif sellBackList.tradestatus==1>待入库
+								<#elseif sellBackList.tradestatus==2>已入库
+								<#elseif sellBackList.tradestatus==3>已完成
+								<#elseif sellBackList.tradestatus==4>已取消
+							</#if>
+						</td>
+					</tr>
+					<tr>
+						<td >关联订单号：</td>
+						<td>${sellBackList.ordersn}</td>
+						<td>订单支付总金额：</td>
+						<td>￥${orderinfo.paymoney}（包含运费：￥${orderinfo.shipping_amount}）</td>
+					</tr>
+					<tr>
+						<td>退货仓库</td>
+						<td>${depot_name}</td>
+						<td >申请退款金额：</td>
+						<td >￥${countprice }</td>
+					</tr>
+					<tr>
+						<td >退款方式：</td>
+						<td >
+							${sellBackList.refund_way }
+						</td>
+						<td>客户账号</td>
+						<td>${sellBackList.return_account }</td>
+					</tr>
+					<tr>
+						<td>退款备注：</td>
+						<td colspan="3">${sellBackList.remark!'' }</td>
+					</tr>
+					<tr>
+						<td >客服操作备注：</td>
+						<td colspan="3">${sellBackList.seller_remark!'' }</td>
+					</tr>
+					<tr>
+						<td >库管备注：</td>
+						<td colspan="3">${sellBackList.warehouse_remark!'' }</td>
+					</tr> 
+					<#if sellBackList.tradestatus==2> 
+					 
+					<tr>
+						<td >每消费￥1.00 产生积分</td><td>${buygoods_num_mp} 积分</td> 
+						<td>人民币积分兑换比例</td><td><#if parities==0>汇率没有设置，请前往系统设置=》积分设置 设置该属性值<#else>${parities}积分 ： ￥1.00</#if></td>
+					</tr>
+					
+					
+					<tr>
+						<td>用户当前积分</td><td>${member.mp} 积分</td>
+						<td>退货所需积分</td>
+						<td>退货所需积分（${(countprice*buygoods_num_mp)?floor}） = 商品金额（￥${countprice}） * 生成积分比例（${buygoods_num_mp}）</td>
+					</tr>
+					<tr>
+					<td>不足退货所需积分</td>
+					<td>   
+					<#if member.mp - countprice*buygoods_num_mp gt 0> 
+							<#assign bzjf = 0>
+					<#else>
+						<#assign bzjf = countprice*buygoods_num_mp - member.mp >
+					</#if>
+					${bzjf} 积分
+					</td>
+					<td>不足退货所需积分对应金额</td>
+					<td>
+						<#assign bzje = bzjf/parities>
+						金额（${bzje}）= 不足积分部分（${bzjf}）/ 积分人民币汇率（${parities}）
+					</td>
+					 
+					</tr>
+					<tr>
+					<td>建议退款金额</td>
+					<td>
+					${countprice-bzje}
+					</td>
+					<td>最终计算公式</td>
+					<td>
+						建议退款金额（￥${countprice-bzje}） = 商品金额（￥${countprice}）- 不足退货所需积分对应金额（￥${bzje}）
+					</td>
+					</tr> 
+					
+						<tr>
+							<td>财务备注：</td>
+							<td colspan="3">
+								<textarea rows="3" id="finance_remark" name="finance_remark">${sellBackList.finance_remark!''}</textarea>
+							</td>
+						</tr>
+						<tr>
+							<td>退款金额：</td>
+							<td colspan="3"><input type="text" class="easyui-numberbox input_text" precision="2" data-options="required:true" name="alltotal_pay"  /></td>
+						</tr>
+						<#else>
+							<tr>
+								<td>财务备注：</td>
+								<td colspan="3">
+									${sellBackList.finance_remark!''}
+									
+								</td>
+							</tr>
+					</#if>
+					
+				</table>
+			</div>
+		<br>
+
+		<div class="shadowBoxWhite  whiteBox detail">
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" >
+				<tr>
+					<th class="title" colspan="5">退货的商品</th>
+				</tr>
+				<tr>
+					<th width="300px">商品名称</th>
+					<th width="100px">金额</th>
+					<th width="100px">购买数量</th>
+					<th width="100px">退货数量</th>
+					<th width="100px">入库数量</th>
+				</tr>
+				<#list goodsList as data>
+				<tr>
+					<td>${data.goods_name }<#if data.other??>
+								         (${data.other!''}) 
+								          </#if></td>
+					<td>${data.price }</td>
+					<td>${data.ship_num }</td> 
+					<td>${data.return_num }</td>
+					<td>${data.storage_num!''}</td> 
+					
+				</tr> 
+				</#list>
+				
+				<tr>
+					<td colspan="5" style="text-align: center;">
+						<input type="hidden" value="${sellBackList.id }" name="id" /> 
+						<#if sellBackList.tradestatus==2> 
+							<a href="javascript:void(0)" class="easyui-linkbutton saveBtn" id="submit" status="3">确认结算</a>
+						</#if>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<br>
+		<div class="shadowBoxWhite  whiteBox detail">
+			<table width="100%" cellspacing="0" cellpadding="0" border="0">
+				<tr>
+					<th colspan="3" class="title">操作日志</th>
+				</tr>
+				<tr>
+					<th>操作人员</th>
+					<th>操作详情</th>
+					<th>操作时间</th>
+				</tr>
+				<#list logList as log>
+				<tr>
+					<td>${log.operator }</td>
+					<td>${log.logdetail }</td>
+					<td><@dateformat time='${log.logtime}' pattern='yyyy-MM-dd'/></td>
+				</tr>
+				</#list>
+				<tr id="cancelRemark" style="display: none;">
+					<td colspan="4" align="center">
+						取消原因：
+						<input type="text" class="input" value="" name="cancelRemark" style="width: 150px; height: 26px; line-height: 26px;" />
+					</td>
+				</tr>
+			</table>
+		</div>
+	</form>
+</div>
+
+<script type="text/javascript">
+	$('.saveBtn').click(function() {
+		var formflag= $("#theForm").form().form('validate');
+		if(!formflag){
+			return false;
+		}
+		var status = 3; //由于ie的bug，直接写死，不用读
+		$(".savebtn").linkbutton("disable");
+		var options = {
+			url : "${ctx}/shop/admin/sellBack/save-payment.do",
+			data : {
+				"ajax" : "yes",
+				"status" : status
+			},
+			type : "POST",
+			dataType : 'json',
+			success : function(result) {
+				if (result.result == 1) {
+					$.Loading.success(result.message);
+					parent.CloseTabByTitle("退货结算");
+					parent.reloadTabGrid("退货单");
+					window.location.href = "${ctx}/shop/admin/sellBack/payment.do?id=${id}";
+				}
+				if (result.result == 0) {
+					$.Loading.error(result.message);
+					$(".savebtn").linkbutton("enable");
+				}
+			},
+			error : function(e) {
+				alert("出现错误 ，请重试");
+				$(".savebtn").linkbutton("enable");
+			}
+		};
+		$('#theForm').ajaxSubmit(options);
+	});
+</script>
+
+<#include '/admin/footer.html' >

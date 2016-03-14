@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.enation.app.javashop</groupId>
-  <artifactId>javashop</artifactId>
+  <artifactId>javashop-eop</artifactId>
   <version>6.1.0</version>
   <packaging>pom</packaging>
 
-  <name>javashop</name>
+  <name>javashop-eop</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -24,8 +24,9 @@
   </dependencies>
   <modules>
   	<module>core</module>
-  	
-  	
-    
+
+
+
+  	<module>web</module>
   </modules>
 </project>
